@@ -1,337 +1,344 @@
 /* global Chart */
 
-(() => {
-  const API_URL = 'https://query1.finance.yahoo.com/v8/finance/chart';
-  const RANGE_DAYS = {
+const SYMBOL_INPUT = document.getElementById('symbol-input');
+const RUN_BUTTON = document.getElementById('run-backtest');
+const RANGE_BUTTONS = Array.from(document.querySelectorAll('.range-btn'));
+const DATA_SOURCE = document.getElementById('data-source');
+const LOAD_STATUS = document.getElementById('load-status');
+const START_PRICE = document.getElementById('start-price');
+const END_PRICE = document.getElementById('end-price');
+const RETURN_PERCENT = document.getElementById('return-percent');
+const MAX_DRAWDOWN = document.getElementById('max-drawdown');
+const VOLATILITY = document.getElementById('volatility');
+const CHART_EL = document.getElementById('price-chart');
+
+if (CHART_EL && typeof Chart !== 'undefined') {
+  const state = {
+    symbol: normalizeSymbol(SYMBOL_INPUT?.value || 'AAPL'),
+    range: '1w',
+    source: 'live',
+    rawSeries: [],
+    chart: null,
+  };
+
+  const RANGE_TO_DAYS = {
     '1w': 7,
-    '1m': 30,
+    '1m': 31,
     '1y': 365,
-    '5y': 365 * 5,
-  };
-  const PERIOD_LABELS = {
-    '1w': '1 Woche',
-    '1m': '1 Monat',
-    '1y': '1 Jahr',
-    '5y': '5 Jahre',
+    '5y': Infinity,
   };
 
-  const els = {};
-  let chart;
-  let allPoints = [];
-  let activeRange = '5y';
-  let activeSymbol = 'AAPL';
-  let currentSource = 'Yahoo Finance';
-  let currentMode = 'live';
-
-  document.addEventListener('DOMContentLoaded', () => {
-    cacheElements();
-    bindEvents();
-    initChart();
-
-    const params = new URLSearchParams(window.location.search);
-    const symbolFromUrl = params.get('symbol');
-    const rangeFromUrl = params.get('range');
-    if (rangeFromUrl && RANGE_DAYS[rangeFromUrl]) {
-      activeRange = rangeFromUrl;
-    }
-    if (symbolFromUrl) {
-      els.symbolInput.value = normalizeSymbol(symbolFromUrl);
-    }
-
-    setActivePeriod(activeRange);
-    loadSymbol(els.symbolInput.value, { preferCurrentRange: true });
+  const formatPrice = new Intl.NumberFormat('de-DE', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   });
 
-  function cacheElements() {
-    els.form = document.getElementById('symbol-form');
-    els.symbolInput = document.getElementById('symbol-input');
-    els.runButton = document.getElementById('run-button');
-    els.periodButtons = Array.from(document.querySelectorAll('.period-button'));
-    els.dataSource = document.getElementById('data-source');
-    els.statusText = document.getElementById('status-text');
-    els.chartMeta = document.getElementById('chart-meta');
-    els.canvas = document.getElementById('price-chart');
-    els.metricStart = document.getElementById('metric-start');
-    els.metricEnd = document.getElementById('metric-end');
-    els.metricReturn = document.getElementById('metric-return');
-    els.metricDrawdown = document.getElementById('metric-drawdown');
-    els.metricVolatility = document.getElementById('metric-volatility');
-  }
+  const formatPercent = new Intl.NumberFormat('de-DE', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+    signDisplay: 'exceptZero',
+  });
 
-  function bindEvents() {
-    els.form.addEventListener('submit', (event) => {
+  init().catch((error) => {
+    console.error(error);
+    useDemoData('AAPL', 'Initialisierung fehlgeschlagen; Demo-Daten geladen.');
+  });
+
+  RUN_BUTTON?.addEventListener('click', () => {
+    void loadSymbol(SYMBOL_INPUT.value);
+  });
+
+  SYMBOL_INPUT?.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
       event.preventDefault();
-      loadSymbol(els.symbolInput.value);
-    });
+      void loadSymbol(SYMBOL_INPUT.value);
+    }
+  });
 
-    els.periodButtons.forEach((button) => {
-      button.addEventListener('click', () => {
-        activeRange = button.dataset.range;
-        setActivePeriod(activeRange);
-        renderFromCache();
-      });
+  RANGE_BUTTONS.forEach((button) => {
+    button.addEventListener('click', () => {
+      state.range = button.dataset.range || '1w';
+      updateActiveRange();
+      render();
     });
+  });
+
+  async function init() {
+    updateActiveRange();
+    await loadSymbol(state.symbol);
   }
 
-  function initChart() {
-    const ctx = els.canvas.getContext('2d');
-    chart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: [],
-        datasets: [
-          {
-            label: 'Kurs',
-            data: [],
-            borderColor: '#1d4ed8',
-            backgroundColor: 'rgba(29, 78, 216, 0.08)',
-            borderWidth: 2.5,
-            pointRadius: 0,
-            tension: 0.25,
-            fill: true,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        animation: { duration: 160 },
-        interaction: { mode: 'index', intersect: false },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label(context) {
-                return ` ${formatCurrency(context.parsed.y)}`;
-              },
-            },
-          },
-        },
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: {
-              maxRotation: 0,
-              autoSkip: true,
-              color: '#667085',
-            },
-          },
-          y: {
-            grid: { color: 'rgba(15, 23, 42, 0.08)' },
-            ticks: {
-              color: '#667085',
-              callback(value) {
-                return formatCurrency(value);
-              },
-            },
-          },
-        },
-      },
-    });
-  }
+  async function loadSymbol(rawSymbol) {
+    const symbol = normalizeSymbol(rawSymbol);
+    if (!symbol) {
+      LOAD_STATUS.textContent = 'Bitte ein gültiges Symbol eingeben.';
+      return;
+    }
 
-  function setActivePeriod(range) {
-    els.periodButtons.forEach((button) => {
-      button.classList.toggle('active', button.dataset.range === range);
-    });
-    els.chartMeta.textContent = `${PERIOD_LABELS[range]} · ${activeSymbol}`;
-  }
+    state.symbol = symbol;
+    if (SYMBOL_INPUT.value !== symbol) {
+      SYMBOL_INPUT.value = symbol;
+    }
 
-  async function loadSymbol(inputSymbol, options = {}) {
-    const symbol = normalizeSymbol(inputSymbol);
-    if (!symbol) return;
-
-    activeSymbol = symbol;
-    els.symbolInput.value = symbol;
-    els.runButton.disabled = true;
-    els.statusText.textContent = 'Lade Kursdaten …';
-    currentMode = 'live';
-    updateDataSource('Yahoo Finance');
+    setLoading(true, `Lade ${symbol} …`);
 
     try {
-      allPoints = await fetchYahooData(symbol);
-      currentSource = 'Yahoo Finance';
-      currentMode = 'live';
-      els.statusText.textContent = `Daten geladen für ${symbol}.`;
+      const series = await fetchYahooSeries(symbol);
+      state.rawSeries = series;
+      state.source = 'live';
+      DATA_SOURCE.textContent = 'Live-Daten';
+      DATA_SOURCE.classList.remove('demo');
+      LOAD_STATUS.textContent = `${symbol} geladen.`;
+      render();
     } catch (error) {
-      allPoints = generateDemoData(symbol);
-      currentSource = 'Demo-Daten';
-      currentMode = 'demo';
-      els.statusText.textContent = `Live-Fetch fehlgeschlagen – Demo-Daten für ${symbol}.`;
-      console.warn('Yahoo Finance fetch failed, using demo data.', error);
+      console.warn('Live-Daten fehlgeschlagen, verwende Demo-Daten.', error);
+      useDemoData(symbol, 'Live-Daten nicht verfügbar; Demo-Daten geladen.');
     } finally {
-      els.runButton.disabled = false;
-      updateDataSource(currentSource);
-      renderFromCache(options.preferCurrentRange ? activeRange : '5y');
+      setLoading(false);
     }
   }
 
-  async function fetchYahooData(symbol) {
-    const url = `${API_URL}/${encodeURIComponent(symbol)}?interval=1d&range=5y`;
+  function useDemoData(symbol, message) {
+    state.symbol = symbol;
+    state.source = 'demo';
+    state.rawSeries = buildDemoSeries(symbol, 5 * 252);
+    DATA_SOURCE.textContent = 'Demo-Daten';
+    DATA_SOURCE.classList.add('demo');
+    LOAD_STATUS.textContent = message;
+    if (SYMBOL_INPUT.value !== symbol) {
+      SYMBOL_INPUT.value = symbol;
+    }
+    render();
+  }
+
+  function setLoading(isLoading, message) {
+    RUN_BUTTON.disabled = isLoading;
+    SYMBOL_INPUT.disabled = isLoading;
+
+    if (message) {
+      LOAD_STATUS.textContent = message;
+    }
+
+    if (isLoading) {
+      DATA_SOURCE.textContent = 'Lädt …';
+    }
+  }
+
+  function updateActiveRange() {
+    RANGE_BUTTONS.forEach((button) => {
+      const active = button.dataset.range === state.range;
+      button.classList.toggle('active', active);
+      button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+  }
+
+  function render() {
+    if (!state.rawSeries.length) {
+      return;
+    }
+
+    const visibleSeries = sliceByRange(state.rawSeries, state.range);
+    const labels = visibleSeries.map((point) => formatLabel(point.date));
+    const prices = visibleSeries.map((point) => point.close);
+    const metrics = calculateMetrics(visibleSeries);
+
+    updateMetrics(metrics);
+    updateChart(labels, prices);
+
+    const suffix = state.source === 'demo' ? ' · Demo-Daten' : '';
+    document.title = `Backtest – ${state.symbol}${suffix}`;
+  }
+
+  function updateMetrics(metrics) {
+    START_PRICE.textContent = `${formatPrice.format(metrics.start)} €`;
+    END_PRICE.textContent = `${formatPrice.format(metrics.end)} €`;
+    RETURN_PERCENT.textContent = `${formatPercent.format(metrics.returnPct)} %`;
+    MAX_DRAWDOWN.textContent = `${formatPercent.format(metrics.maxDrawdown)} %`;
+    VOLATILITY.textContent = `${formatPercent.format(metrics.volatility)} %`;
+  }
+
+  function updateChart(labels, prices) {
+    const data = {
+      labels,
+      datasets: [
+        {
+          label: `${state.symbol} Kurs`,
+          data: prices,
+          borderColor: '#2962ff',
+          backgroundColor: 'rgba(41, 98, 255, 0.12)',
+          pointRadius: 0,
+          pointHitRadius: 10,
+          tension: 0.28,
+          borderWidth: 2.5,
+          fill: true,
+        },
+      ],
+    };
+
+    if (!state.chart) {
+      state.chart = new Chart(CHART_EL, {
+        type: 'line',
+        data,
+        options: chartOptions(),
+      });
+      return;
+    }
+
+    state.chart.data = data;
+    state.chart.options = chartOptions();
+    state.chart.update();
+  }
+
+  function chartOptions() {
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: {
+        mode: 'index',
+        intersect: false,
+      },
+      plugins: {
+        legend: {
+          display: false,
+        },
+        tooltip: {
+          backgroundColor: 'rgba(15, 23, 42, 0.96)',
+          borderColor: 'rgba(255, 255, 255, 0.08)',
+          borderWidth: 1,
+          padding: 12,
+          titleColor: '#ffffff',
+          bodyColor: '#e2e8f0',
+          displayColors: false,
+          callbacks: {
+            label(context) {
+              return ` ${formatPrice.format(context.parsed.y)} €`;
+            },
+          },
+        },
+      },
+      scales: {
+        x: {
+          grid: {
+            display: false,
+          },
+          ticks: {
+            color: '#667085',
+            maxRotation: 0,
+            autoSkip: true,
+            maxTicksLimit: 8,
+          },
+          border: {
+            color: 'rgba(228, 233, 242, 0.9)',
+          },
+        },
+        y: {
+          grid: {
+            color: 'rgba(228, 233, 242, 0.85)',
+          },
+          ticks: {
+            color: '#667085',
+            callback(value) {
+              return `${Number(value).toFixed(0)} €`;
+            },
+          },
+          border: {
+            color: 'rgba(228, 233, 242, 0.9)',
+          },
+        },
+      },
+    };
+  }
+
+  function normalizeSymbol(value) {
+    return String(value || '')
+      .trim()
+      .toUpperCase()
+      .replace(/[^A-Z0-9.^-]/g, '')
+      .slice(0, 12);
+  }
+
+  async function fetchYahooSeries(symbol) {
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=5y`;
     const response = await fetch(url, {
+      method: 'GET',
       mode: 'cors',
       cache: 'no-store',
-      headers: { accept: 'application/json' },
     });
 
     if (!response.ok) {
-      throw new Error(`Yahoo response ${response.status}`);
+      throw new Error(`Yahoo API antwortete mit ${response.status}`);
     }
 
     const payload = await response.json();
     const result = payload?.chart?.result?.[0];
-    const timestamps = result?.timestamp ?? [];
-    const closes = result?.indicators?.quote?.[0]?.close ?? [];
+    const timestamps = result?.timestamp || [];
+    const closes = result?.indicators?.quote?.[0]?.close || [];
 
-    const points = [];
-    timestamps.forEach((timestamp, index) => {
-      const close = closes[index];
-      if (Number.isFinite(close)) {
-        points.push({ date: new Date(timestamp * 1000), value: Number(close) });
+    const series = timestamps
+      .map((timestamp, index) => ({
+        date: new Date(timestamp * 1000),
+        close: closes[index],
+      }))
+      .filter((point) => Number.isFinite(point.close));
+
+    if (series.length < 20) {
+      throw new Error('Zu wenige Datenpunkte aus der API.');
+    }
+
+    return series;
+  }
+
+  function sliceByRange(series, range) {
+    const cutoff = new Date(series[series.length - 1].date);
+    const days = RANGE_TO_DAYS[range] ?? RANGE_TO_DAYS['1w'];
+
+    if (Number.isFinite(days)) {
+      cutoff.setDate(cutoff.getDate() - days);
+      return series.filter((point) => point.date >= cutoff);
+    }
+
+    return series;
+  }
+
+  function calculateMetrics(series) {
+    const start = series[0].close;
+    const end = series[series.length - 1].close;
+    const returnPct = ((end - start) / start) * 100;
+
+    let runningMax = series[0].close;
+    let worstDrawdown = 0;
+    const dailyReturns = [];
+
+    for (let index = 1; index < series.length; index += 1) {
+      const current = series[index].close;
+      const previous = series[index - 1].close;
+      const dailyReturn = (current / previous) - 1;
+      dailyReturns.push(dailyReturn);
+
+      if (current > runningMax) {
+        runningMax = current;
       }
-    });
 
-    if (points.length < 20) {
-      throw new Error('Not enough market data returned');
-    }
-
-    return points;
-  }
-
-  function generateDemoData(symbol) {
-    const seed = symbolSeed(symbol);
-    const startDate = new Date();
-    startDate.setFullYear(startDate.getFullYear() - 5);
-    startDate.setHours(0, 0, 0, 0);
-
-    const rand = mulberry32(seed);
-    const points = [];
-    let price = 60 + (seed % 240);
-    let day = new Date(startDate);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    while (day <= today) {
-      const weekday = day.getDay();
-      if (weekday !== 0 && weekday !== 6) {
-        const cycle = Math.sin(points.length / 45) * 0.0035;
-        const drift = 0.00035 + cycle;
-        const shock = (rand() - 0.5) * 0.028;
-        const volatilityCluster = Math.sin(points.length / 120) * 0.006;
-        price = Math.max(5, price * (1 + drift + shock + volatilityCluster * 0.4));
-        points.push({ date: new Date(day), value: Number(price.toFixed(2)) });
-      }
-      day.setDate(day.getDate() + 1);
-    }
-
-    return points;
-  }
-
-  function renderFromCache(rangeOverride) {
-    if (!allPoints.length) return;
-
-    const range = rangeOverride ?? activeRange;
-    const days = RANGE_DAYS[range] ?? RANGE_DAYS['5y'];
-    const filtered = filterPoints(allPoints, days);
-    const metrics = calculateMetrics(filtered);
-
-    chart.data.labels = filtered.map((point) => formatDate(point.date));
-    chart.data.datasets[0].data = filtered.map((point) => point.value);
-    chart.data.datasets[0].label = `${activeSymbol} · ${currentMode === 'demo' ? 'Demo-Daten' : 'Yahoo Finance'}`;
-    chart.update('none');
-
-    updateMetrics(metrics);
-    updateDataSource(currentSource);
-    els.chartMeta.textContent = `${PERIOD_LABELS[range]} · ${activeSymbol} · ${filtered.length.toLocaleString('de-DE')} Punkte`;
-  }
-
-  function filterPoints(points, days) {
-    const lastDate = points[points.length - 1].date;
-    const cutoff = new Date(lastDate);
-    cutoff.setDate(cutoff.getDate() - days);
-    return points.filter((point) => point.date >= cutoff);
-  }
-
-  function calculateMetrics(points) {
-    if (points.length < 2) {
-      return null;
-    }
-
-    const start = points[0].value;
-    const end = points[points.length - 1].value;
-    const returnPct = ((end / start) - 1) * 100;
-    const drawdownPct = calculateMaxDrawdown(points);
-    const volatilityPct = calculateAnnualizedVolatility(points);
-
-    return { start, end, returnPct, drawdownPct, volatilityPct };
-  }
-
-  function calculateMaxDrawdown(points) {
-    let peak = points[0].value;
-    let maxDrawdown = 0;
-
-    for (const point of points) {
-      peak = Math.max(peak, point.value);
-      const drawdown = (point.value / peak) - 1;
-      maxDrawdown = Math.min(maxDrawdown, drawdown);
-    }
-
-    return maxDrawdown * 100;
-  }
-
-  function calculateAnnualizedVolatility(points) {
-    const returns = [];
-    for (let index = 1; index < points.length; index += 1) {
-      const prev = points[index - 1].value;
-      const current = points[index].value;
-      if (prev > 0) {
-        returns.push((current / prev) - 1);
+      const drawdown = (current / runningMax) - 1;
+      if (drawdown < worstDrawdown) {
+        worstDrawdown = drawdown;
       }
     }
 
-    if (!returns.length) return 0;
+    const mean = dailyReturns.reduce((sum, value) => sum + value, 0) / Math.max(dailyReturns.length, 1);
+    const variance = dailyReturns.reduce((sum, value) => sum + (value - mean) ** 2, 0) / Math.max(dailyReturns.length - 1, 1);
+    const volatility = Math.sqrt(variance) * Math.sqrt(252) * 100;
 
-    const mean = returns.reduce((sum, value) => sum + value, 0) / returns.length;
-    const variance = returns.reduce((sum, value) => sum + ((value - mean) ** 2), 0) / returns.length;
-    return Math.sqrt(variance) * Math.sqrt(252) * 100;
+    return {
+      start,
+      end,
+      returnPct,
+      maxDrawdown: worstDrawdown * 100,
+      volatility,
+    };
   }
 
-  function updateMetrics(metrics) {
-    if (!metrics) {
-      els.metricStart.textContent = '—';
-      els.metricEnd.textContent = '—';
-      els.metricReturn.textContent = '—';
-      els.metricDrawdown.textContent = '—';
-      els.metricVolatility.textContent = '—';
-      return;
-    }
-
-    els.metricStart.textContent = formatCurrency(metrics.start);
-    els.metricEnd.textContent = formatCurrency(metrics.end);
-    els.metricReturn.textContent = formatPercent(metrics.returnPct);
-    els.metricDrawdown.textContent = formatPercent(metrics.drawdownPct);
-    els.metricVolatility.textContent = formatPercent(metrics.volatilityPct);
-  }
-
-  function updateDataSource(label) {
-    els.dataSource.textContent = label;
-    els.dataSource.dataset.mode = label === 'Demo-Daten' ? 'demo' : 'live';
-  }
-
-  function formatCurrency(value) {
-    return new Intl.NumberFormat('de-DE', {
-      style: 'currency',
-      currency: 'USD',
-      maximumFractionDigits: 2,
-    }).format(value);
-  }
-
-  function formatPercent(value) {
-    const sign = value > 0 ? '+' : '';
-    return `${sign}${value.toFixed(2).replace('.', ',')} %`;
-  }
-
-  function formatDate(date) {
+  function formatLabel(date) {
     return new Intl.DateTimeFormat('de-DE', {
       day: '2-digit',
       month: '2-digit',
@@ -339,20 +346,51 @@
     }).format(date);
   }
 
-  function normalizeSymbol(value) {
-    return String(value || '').trim().toUpperCase().replace(/[^A-Z0-9.\-]/g, '').slice(0, 12);
+  function buildDemoSeries(symbol, points) {
+    const seed = Array.from(symbol).reduce((total, char) => total + char.charCodeAt(0), 0) || 1;
+    const rand = seededRandom(seed);
+    const today = new Date();
+    const startDate = new Date(today);
+    startDate.setFullYear(startDate.getFullYear() - 5);
+
+    const totalBusinessDays = Math.max(points, 900);
+    const series = [];
+    let price = 80 + (seed % 180);
+
+    for (let dayOffset = 0; series.length < totalBusinessDays; dayOffset += 1) {
+      const current = new Date(startDate);
+      current.setDate(startDate.getDate() + dayOffset);
+
+      if (isWeekend(current)) {
+        continue;
+      }
+
+      const drift = 0.00025;
+      const shock = (rand() - 0.5) * 0.028;
+      price = Math.max(10, price * (1 + drift + shock));
+      series.push({
+        date: current,
+        close: Number(price.toFixed(2)),
+      });
+    }
+
+    return series;
   }
 
-  function symbolSeed(symbol) {
-    return symbol.split('').reduce((seed, char) => (seed * 31 + char.charCodeAt(0)) >>> 0, 0) || 7;
-  }
+  function seededRandom(seed) {
+    let value = seed % 2147483647;
+    if (value <= 0) {
+      value += 2147483646;
+    }
 
-  function mulberry32(seed) {
-    return function random() {
-      let t = (seed += 0x6D2B79F5);
-      t = Math.imul(t ^ (t >>> 15), t | 1);
-      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    return () => {
+      value = (value * 16807) % 2147483647;
+      return (value - 1) / 2147483646;
     };
   }
-})();
+
+  function isWeekend(date) {
+    const day = date.getDay();
+    return day === 0 || day === 6;
+  }
+}
