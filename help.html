@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Backtest – Hilfe</title>
+    <meta
+      name="description"
+      content="Schritt-für-Schritt-Hilfe zur Backtest-Web-App, Kennzahlen und Zeiträumen."
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="page-shell help-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Hilfe</p>
+          <h1>Backtest</h1>
+        </div>
+        <a class="text-link" href="index.html">Zurück</a>
+      </header>
+
+      <main class="layout help-layout">
+        <section class="panel help-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Schritt für Schritt</p>
+              <h2>So benutzt du die Analyse</h2>
+            </div>
+          </div>
+
+          <ol class="instruction-list">
+            <li>Gib im Feld <strong>Symbol</strong> ein Wertpapier wie <strong>AAPL</strong>, <strong>MSFT</strong> oder <strong>TSLA</strong> ein.</li>
+            <li>Klicke auf <strong>Backtest starten</strong>, damit die App historische Kursdaten lädt.</li>
+            <li>Wähle einen Zeitraum mit <strong>1 Woche</strong>, <strong>1 Monat</strong>, <strong>1 Jahr</strong> oder <strong>5 Jahre</strong>.</li>
+            <li>Prüfe den Chart und die Kennzahlen unterhalb des Diagramms.</li>
+          </ol>
+        </section>
+
+        <section class="panel help-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Kennzahlen</p>
+              <h2>Was die Werte bedeuten</h2>
+            </div>
+          </div>
+
+          <div class="help-grid">
+            <article class="help-card">
+              <h3>Rendite</h3>
+              <p>Die prozentuale Veränderung zwischen dem ersten und letzten Kurs im gewählten Zeitraum.</p>
+            </article>
+            <article class="help-card">
+              <h3>Max Drawdown</h3>
+              <p>Der stärkste zwischenzeitliche Rückgang vom bisherigen Höchststand. Je kleiner der Wert, desto ruhiger war die Entwicklung.</p>
+            </article>
+            <article class="help-card">
+              <h3>Volatilität</h3>
+              <p>Ein Maß für Schwankungen. Hohe Volatilität bedeutet unruhigere Kursbewegungen.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="panel help-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Zeiträume</p>
+              <h2>Wofür 1W, 1M, 1J und 5J stehen</h2>
+            </div>
+          </div>
+
+          <div class="help-grid compact-grid">
+            <article class="help-card compact-card"><h3>1W</h3><p>Letzte 7 Kalendertage.</p></article>
+            <article class="help-card compact-card"><h3>1M</h3><p>Letzte 30 Kalendertage.</p></article>
+            <article class="help-card compact-card"><h3>1J</h3><p>Letzte 365 Kalendertage.</p></article>
+            <article class="help-card compact-card"><h3>5J</h3><p>Letzte 5 Jahre.</p></article>
+          </div>
+        </section>
+
+        <aside class="notice-box" role="note">
+          <strong>Hinweis</strong>
+          <p>Backtests sind historisch und keine Garantie für zukünftige Ergebnisse.</p>
+        </aside>
+      </main>
+    </div>
+  </body>
+</html>

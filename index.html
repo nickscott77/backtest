@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Backtest</title>
+    <meta
+      name="description"
+      content="Schlanke Backtest-Web-App mit Kurschart, Kennzahlen und historischer Einordnung."
+    />
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Aktien-Backtest</p>
+          <h1>Backtest</h1>
+        </div>
+        <a class="text-link" href="help.html">Hilfe</a>
+      </header>
+
+      <main class="layout">
+        <section class="panel controls-panel" aria-labelledby="controls-title">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Analyse</p>
+              <h2 id="controls-title">Symbol und Zeitraum</h2>
+            </div>
+            <p class="muted">Kursverlauf, Rendite und Risiko auf einen Blick.</p>
+          </div>
+
+          <form id="symbol-form" class="symbol-form">
+            <label class="field">
+              <span>Symbol</span>
+              <input id="symbol-input" name="symbol" type="text" value="AAPL" autocomplete="off" spellcheck="false" maxlength="12" />
+            </label>
+            <button id="run-button" class="primary-button" type="submit">Backtest starten</button>
+          </form>
+
+          <div class="period-group" role="tablist" aria-label="Zeitraum auswählen">
+            <button class="period-button active" type="button" data-range="1w">1 Woche</button>
+            <button class="period-button" type="button" data-range="1m">1 Monat</button>
+            <button class="period-button" type="button" data-range="1y">1 Jahr</button>
+            <button class="period-button" type="button" data-range="5y">5 Jahre</button>
+          </div>
+
+          <div class="status-row">
+            <span id="data-source" class="badge">Yahoo Finance</span>
+            <span id="status-text" class="muted">Bereit.</span>
+          </div>
+        </section>
+
+        <section class="panel chart-panel" aria-labelledby="chart-title">
+          <div class="panel-heading chart-heading">
+            <div>
+              <p class="eyebrow">Chart</p>
+              <h2 id="chart-title">Historischer Verlauf</h2>
+            </div>
+            <p id="chart-meta" class="muted">—</p>
+          </div>
+
+          <div class="chart-wrap">
+            <canvas id="price-chart" aria-label="Linienchart des Kursverlaufs" role="img"></canvas>
+          </div>
+        </section>
+
+        <section class="metrics-grid" aria-labelledby="metrics-title">
+          <h2 id="metrics-title" class="sr-only">Kennzahlen</h2>
+          <article class="metric-card">
+            <span class="metric-label">Startkurs</span>
+            <strong id="metric-start">—</strong>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Endkurs</span>
+            <strong id="metric-end">—</strong>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Rendite</span>
+            <strong id="metric-return">—</strong>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Max Drawdown</span>
+            <strong id="metric-drawdown">—</strong>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Volatilität</span>
+            <strong id="metric-volatility">—</strong>
+          </article>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>
