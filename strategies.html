@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Backtest Pro – Strategien</title>
+  <meta name="description" content="10 bekannte Trading-Strategien mit Regeln, Parametern, Stärken, Risiken und Testbarkeit in der App." />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="page-shell strategies-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Strategie-Handbuch</p>
+        <h1>10 Trading-Strategien</h1>
+        <p class="hero-text">Bekannte Muster, klar erklärt und browser-tauglich formuliert. Alle Strategien sind so beschrieben, dass sie in der App als Preset oder Inspiration für die DSL dienen können.</p>
+      </div>
+      <nav class="topnav" aria-label="Hauptnavigation">
+        <a href="index.html">Dashboard</a>
+        <a href="help.html">Hilfe</a>
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Dark Mode aktivieren" aria-pressed="false">Dark Mode</button>
+      </nav>
+    </header>
+
+    <main class="panel prose strategies-article">
+      <div class="article-intro">
+        <div>
+          <p class="eyebrow">Für die Backtest-App</p>
+          <h2>Übersicht mit Regeln, Parametern, Chancen und Risiken</h2>
+        </div>
+        <p>Die Liste unten fokussiert auf einfache, robuste Logiken, die sich mit Tagesdaten, OHLC-Preisen und einem Long-only-Backtest gut prüfen lassen. Es geht nicht um institutionelle Vollständigkeit, sondern um eine saubere Lern- und Analysebasis.</p>
+      </div>
+
+      <section class="strategy-grid">
+        <article class="strategy-card">
+          <div class="strategy-head"><span class="pill">1</span><h3>Trendfolge / Moving-Average-Crossover</h3></div>
+          <p><strong>Grundidee:</strong> Ein schneller Durchschnitt kreuzt einen langsamen Durchschnitt nach oben oder unten.</p>
+          <ul>
+            <li><strong>Signale:</strong> Buy beim Cross über, Sell beim Cross unter.</li>
+            <li><strong>Parameter:</strong> Fast/Slow-Periode, SMA oder EMA.</li>
+            <li><strong>Stärken:</strong> Transparent, beliebt und gut testbar.</li>
+            <li><strong>Risiken:</strong> Whipsaws in Seitwärtsmärkten.</li>
+            <li><strong>In dieser App:</strong> Voll als Preset implementiert.</li>
+          </ul>
+        </article>
+
+        <article class="strategy-card">
+          <div class="strategy-head"><span class="pill">2</span><h3>Mean Reversion</h3></div>
+          <p><strong>Grundidee:</strong> Starke Abweichungen vom Mittelwert laufen oft teilweise zurück.</p>
+          <ul>
+            <li><strong>Signale:</strong> Buy unter günstigen Niveaus, Sell am Mittelwert.</li>
+            <li><strong>Parameter:</strong> Lookback, Standardabweichung, Ausstieg am Mittelband.</li>
+            <li><strong>Stärken:</strong> Gut in ruhigen, seitwärts tendierenden Phasen.</li>
+            <li><strong>Risiken:</strong> Kann in Trends lange falsch liegen.</li>
+            <li><strong>In dieser App:</strong> Über Bollinger Mean Reversion abgebildet.</li>
+          </ul>
+        </article>
+
+        <article class="strategy-card">
+          <div class="strategy-head"><span class="pill">3</span><h3>Breakout Trading</h3></div>
+          <p><strong>Grundidee:</strong> Neue Hochs oder Range-Ausbrüche können starke Trends starten.</p>
+          <ul>
+            <li><strong>Signale:</strong> Buy bei Ausbruch über Hoch, Sell bei Bruch eines Tiefs.</li>
+            <li><strong>Parameter:</strong> Lookback für Hoch/Tief, optional Exit-Lookback.</li>
+            <li><strong>Stärken:</strong> Erfasst starke Bewegungen früh.</li>
+            <li><strong>Risiken:</strong> Viele Fehlausbrüche.</li>
+            <li><strong>In dieser App:</strong> Als Preset mit klaren Regeln testbar.</li>
+          </ul>
+        </article>
+
+        <article class="strategy-card">
+          <div class="strategy-head"><span class="pill">4</span><h3>Momentum / Relative Strength</h3></div>
+          <p><strong>Grundidee:</strong> Was stark ist, bleibt oft eine Zeit lang stark.</p>
+          <ul>
+            <li><strong>Signale:</strong> Buy bei positiver Trenddynamik, Sell bei Abkühlung.</li>
+            <li><strong>Parameter:</strong> Lookback, Schwellwert, Trendfilter.</li>
+            <li><strong>Stärken:</strong> Profitiert oft von Trendphasen.</li>
+            <li><strong>Risiken:</strong> Späte Einstiege bei Reversals.</li>
+            <li><strong>In dieser App:</strong> Als Grundidee über Momentum-nahe Presets vermittelbar.</li>
+          </ul>
+        </article>
+
+        <article class="strategy-card">
+          <div class="strategy-head"><span class="pill">5</span><h3>RSI Overbought/Oversold</h3></div>
+          <p><strong>Grundidee:</strong> Der Relative-Stärke-Indikator misst überkaufte und überverkaufte Zustände.</p>
+          <ul>
+            <li><strong>Signale:</strong> Buy unter einer Schwelle, Sell über einer Schwelle.</li>
+            <li><strong>Parameter:</strong> RSI-Periode, Buy-/Sell-Level.</li>
+            <li><strong>Stärken:</strong> Einfach zu verstehen und zu kombinieren.</li>
+            <li><strong>Risiken:</strong> In Trends kann RSI lange extrem bleiben.</li>
+            <li><strong>In dieser App:</strong> Voll testbar als Preset.</li>
+          </ul>
+        </article>
+
+        <article class="strategy-card">
+          <div class="strategy-head"><span class="pill">6</span><h3>MACD-Crossover</h3></div>
+          <p><strong>Grundidee:</strong> Vergleich kurzer und langer EMAs plus Signallinie.</p>
+          <ul>
+            <li><strong>Signale:</strong> Buy bei MACD über Signallinie.</li>
+            <li><strong>Parameter:</strong> Fast/Slow EMA, Signallinie.</li>
+            <li><strong>Stärken:</strong> Kombiniert Trend und Momentum elegant.</li>
+            <li><strong>Risiken:</strong> Reagiert in Seitwärtsphasen verspätet.</li>
+            <li><strong>In dieser App:</strong> Als Preset implementiert.</li>
+          </ul>
+        </article>
+
+        <article class="strategy-card">
+          <div class="strategy-head"><span class="pill">7</span><h3>Bollinger-Bands</h3></div>
+          <p><strong>Grundidee:</strong> Preis relativ zum Mittelwert plus/minus Standardabweichung.</p>
+          <ul>
+            <li><strong>Signale:</strong> Buy am unteren Band, Sell am Mittel- oder oberen Band.</li>
+            <li><strong>Parameter:</strong> Periode, Standardabweichung, Exit-Regel.</li>
+            <li><strong>Stärken:</strong> Anschaulich und gut testbar.</li>
+            <li><strong>Risiken:</strong> Trendstarke Märkte bleiben oft lange am Rand.</li>
+            <li><strong>In dieser App:</strong> Als Mean-Reversion-Preset umgesetzt.</li>
+          </ul>
+        </article>
+
+        <article class="strategy-card">
+          <div class="strategy-head"><span class="pill">8</span><h3>Support / Resistance</h3></div>
+          <p><strong>Grundidee:</strong> Reaktionen an markanten Hochs und Tiefs.</p>
+          <ul>
+            <li><strong>Signale:</strong> Buy an Unterstützung oder bei Breakout darüber.</li>
+            <li><strong>Parameter:</strong> Lookback, Bestätigungslogik, Exit-Level.</li>
+            <li><strong>Stärken:</strong> Psychologisch gut nachvollziehbar.</li>
+            <li><strong>Risiken:</strong> Zonen sind subjektiv und schwer exakt zu kodieren.</li>
+            <li><strong>In dieser App:</strong> Über Breakout und Highest/Lowest-Näherungen abbildbar.</li>
+          </ul>
+        </article>
+
+        <article class="strategy-card">
+          <div class="strategy-head"><span class="pill">9</span><h3>Dollar-Cost-Averaging / Buy-and-Hold</h3></div>
+          <p><strong>Grundidee:</strong> Regelmäßig investieren oder einfach langfristig halten.</p>
+          <ul>
+            <li><strong>Signale:</strong> Kauf zu Beginn, Halten bis zum Ende.</li>
+            <li><strong>Parameter:</strong> Investitionsrhythmus oder Startkapital.</li>
+            <li><strong>Stärken:</strong> Extrem einfach, gute Benchmark.</li>
+            <li><strong>Risiken:</strong> Kein aktives Risikomanagement.</li>
+            <li><strong>In dieser App:</strong> Immer als Vergleichsmaßstab enthalten.</li>
+          </ul>
+        </article>
+
+        <article class="strategy-card">
+          <div class="strategy-head"><span class="pill">10</span><h3>Volatility / ATR-basierte Strategie</h3></div>
+          <p><strong>Grundidee:</strong> Volatilität für Filter, Stops und Positionsmanagement nutzen.</p>
+          <ul>
+            <li><strong>Signale:</strong> Trend plus ATR-Stop oder Volatilitätsfilter.</li>
+            <li><strong>Parameter:</strong> ATR-Periode, Multiplikator, Trendfilter.</li>
+            <li><strong>Stärken:</strong> Gute Ergänzung zu Trendfolgestrategien.</li>
+            <li><strong>Risiken:</strong> Zu enge Stops oder falsche Filter.</li>
+            <li><strong>In dieser App:</strong> Als Ausbauidee dokumentiert.</li>
+          </ul>
+        </article>
+      </section>
+
+      <section class="strategy-footnote">
+        <h3>Wichtiger Rahmen</h3>
+        <p>Die Strategien sind bewusst auf Tagesdaten und ein statisches Browser-Setup zugeschnitten. Für echtes Trading wären zusätzlich Slippage, Steuern, Intraday-Ausführung, Liquidität, Brokerregeln und Portfolio-Effekte zu berücksichtigen.</p>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

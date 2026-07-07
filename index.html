@@ -3,86 +3,265 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Backtest</title>
-  <meta name="description" content="Schlanke Backtest-Web-App mit historischem Kurschart und Kennzahlen." />
+  <title>Backtest Pro</title>
+  <meta name="description" content="Professional Backtest-Dashboard mit Presets, sicherer Custom-DSL, Charts und Trade-Tabelle." />
   <link rel="preconnect" href="https://cdn.jsdelivr.net" />
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
   <script src="app.js" defer></script>
 </head>
 <body>
-  <div class="page-shell">
+  <div class="page-shell dashboard-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Historische Kursanalyse</p>
-        <h1>Backtest</h1>
+        <p class="eyebrow">Professional Backtest Terminal</p>
+        <h1>Backtest Pro</h1>
+        <p class="hero-text">Strategien testen, Presets vergleichen und die Performance mit Equity Curve, Drawdown und Trade-Log analysieren.</p>
       </div>
       <nav class="topnav" aria-label="Hauptnavigation">
+        <a href="strategies.html">Strategien</a>
         <a href="help.html">Hilfe</a>
-        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Dark Mode aktivieren">Dark Mode</button>
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Dark Mode aktivieren" aria-pressed="false">Dark Mode</button>
       </nav>
     </header>
 
-    <main class="layout">
-      <section class="panel controls" aria-labelledby="symbol-heading">
-        <div class="control-group">
-          <label for="symbol-input" id="symbol-heading">Symbol</label>
-          <div class="input-row">
-            <input id="symbol-input" name="symbol" type="text" inputmode="latin" autocomplete="off" spellcheck="false" placeholder="AAPL" value="AAPL" />
-            <button id="run-backtest" class="primary">Backtest starten</button>
-          </div>
-          <p class="hint">Beispiel: AAPL, MSFT, SAP, NVDA</p>
-        </div>
+    <main class="dashboard-grid">
+      <aside class="panel module-nav" aria-label="Bereiche">
+        <p class="eyebrow">Module</p>
+        <a href="#market-panel">Markt</a>
+        <a href="#strategy-panel">Strategie</a>
+        <a href="#analytics-panel">Analyse</a>
+        <a href="#trades-panel">Trades</a>
+      </aside>
 
-        <div class="control-group">
-          <span class="label">Zeitraum</span>
-          <div class="segmented" role="tablist" aria-label="Zeitraum wählen">
-            <button class="range-btn active" data-range="1w" type="button">1 Woche</button>
-            <button class="range-btn" data-range="1m" type="button">1 Monat</button>
-            <button class="range-btn" data-range="1y" type="button">1 Jahr</button>
-            <button class="range-btn" data-range="5y" type="button">5 Jahre</button>
+      <div class="main-column">
+        <section id="market-panel" class="panel chart-panel">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Markt</p>
+              <h2>AAPL · Backtest-Übersicht</h2>
+            </div>
+            <div class="market-meta">
+              <span id="market-symbol-badge" class="badge">AAPL · USD</span>
+              <span id="market-range" class="badge">1J</span>
+              <span id="data-source" class="badge demo">Live-Daten</span>
+              <span id="load-status" class="muted small-text">Bereit.</span>
+            </div>
           </div>
-        </div>
-      </section>
 
-      <section class="panel chart-panel" aria-labelledby="chart-title">
-        <div class="chart-header">
-          <div>
-            <p class="eyebrow">Kursverlauf</p>
-            <h2 id="chart-title">Aktienkurs</h2>
+          <div class="hero-pills">
+            <span class="pill">Datenquelle: Yahoo Finance</span>
+            <span class="pill">Long-only Engine</span>
+            <span class="pill">Chart.js Visualisierung</span>
+            <span class="pill">Sichere DSL</span>
           </div>
-          <div class="status-stack">
-            <span id="data-source" class="badge">Live-Daten</span>
-            <span id="load-status" class="muted">Bereit.</span>
-          </div>
-        </div>
-        <div class="chart-wrap">
-          <canvas id="price-chart" aria-label="Linienchart mit Kursverlauf" role="img"></canvas>
-        </div>
-      </section>
 
-      <section class="metrics" aria-label="Kennzahlen">
-        <article class="metric-card">
-          <span class="metric-label">Startkurs</span>
-          <strong id="start-price">—</strong>
-        </article>
-        <article class="metric-card">
-          <span class="metric-label">Endkurs</span>
-          <strong id="end-price">—</strong>
-        </article>
-        <article class="metric-card">
-          <span class="metric-label">Rendite %</span>
-          <strong id="return-percent">—</strong>
-        </article>
-        <article class="metric-card">
-          <span class="metric-label">Max Drawdown</span>
-          <strong id="max-drawdown">—</strong>
-        </article>
-        <article class="metric-card">
-          <span class="metric-label">Volatilität</span>
-          <strong id="volatility">—</strong>
-        </article>
-      </section>
+          <div class="chart-wrap chart-wrap-large">
+            <canvas id="price-chart" aria-label="Preis-Chart mit Signalen" role="img"></canvas>
+          </div>
+          <p class="chart-note muted small-text">Hinweis: Die Signale werden auf Tages-Schlusskursen berechnet und ohne Look-Ahead dargestellt.</p>
+        </section>
+
+        <section class="charts-grid" aria-labelledby="analytics-panel">
+          <article class="panel chart-card">
+            <div class="section-head small-head">
+              <div>
+                <p class="eyebrow">Equity Curve</p>
+                <h2 id="analytics-panel">Strategie vs. Buy &amp; Hold</h2>
+              </div>
+            </div>
+            <div class="chart-wrap chart-wrap-medium">
+              <canvas id="equity-chart" aria-label="Equity Curve" role="img"></canvas>
+            </div>
+          </article>
+
+          <article class="panel chart-card">
+            <div class="section-head small-head">
+              <div>
+                <p class="eyebrow">Drawdown</p>
+                <h2>Equity-Rückgang</h2>
+              </div>
+            </div>
+            <div class="chart-wrap chart-wrap-medium">
+              <canvas id="drawdown-chart" aria-label="Drawdown Chart" role="img"></canvas>
+            </div>
+          </article>
+        </section>
+
+        <section class="panel metrics-panel" aria-labelledby="kennzahlen-panel">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Kennzahlen</p>
+              <h2 id="kennzahlen-panel">Strategie-Metriken</h2>
+            </div>
+            <div class="status-stack">
+              <span id="trade-summary" class="badge">Keine Trades</span>
+              <span id="metrics-caption" class="muted small-text">Kapital 10.000,00 USD · Gebühren 0,05 % · Slippage 0,02 %</span>
+            </div>
+          </div>
+          <div class="kpi-grid">
+            <article class="metric-card"><span class="metric-label">Endwert</span><strong id="end-value">—</strong></article>
+            <article class="metric-card"><span class="metric-label">Performance</span><strong id="strategy-return">—</strong></article>
+            <article class="metric-card"><span class="metric-label">Buy &amp; Hold</span><strong id="benchmark-return">—</strong></article>
+            <article class="metric-card"><span class="metric-label">Outperformance</span><strong id="outperformance">—</strong></article>
+            <article class="metric-card"><span class="metric-label">Max Drawdown</span><strong id="max-drawdown">—</strong></article>
+            <article class="metric-card"><span class="metric-label">Trades</span><strong id="trade-count">—</strong></article>
+            <article class="metric-card"><span class="metric-label">Trefferquote</span><strong id="win-rate">—</strong></article>
+            <article class="metric-card"><span class="metric-label">Profit-Faktor</span><strong id="profit-factor">—</strong></article>
+            <article class="metric-card"><span class="metric-label">Sharpe</span><strong id="sharpe-ratio">—</strong></article>
+            <article class="metric-card"><span class="metric-label">Volatilität</span><strong id="volatility">—</strong></article>
+          </div>
+        </section>
+
+        <section id="trades-panel" class="panel trade-panel">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Trade-Liste</p>
+              <h2>Ausgeführte Trades</h2>
+            </div>
+            <p class="muted small-text">Signal-Ausführung erfolgt vereinfacht auf Schlusskursbasis.</p>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Einstieg</th>
+                  <th>Entry</th>
+                  <th>Ausstieg</th>
+                  <th>Exit</th>
+                  <th>Bars</th>
+                  <th>Qty</th>
+                  <th>P&amp;L</th>
+                  <th>Rendite</th>
+                  <th>Grund</th>
+                </tr>
+              </thead>
+              <tbody id="trade-body">
+                <tr class="empty-row"><td colspan="9">Noch keine Trades berechnet.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <aside class="sidebar">
+        <section class="panel controls-panel">
+          <div class="section-head small-head">
+            <div>
+              <p class="eyebrow">Daten</p>
+              <h2>Symbol &amp; Zeitraum</h2>
+            </div>
+          </div>
+          <div class="control-group">
+            <label for="symbol-input">Symbol</label>
+            <input id="symbol-input" type="text" class="field" value="AAPL" placeholder="AAPL, MSFT, SPY, SAP.DE" />
+            <p class="muted small-text">Mit Enter lädst du das Symbol neu und startest den Backtest.</p>
+          </div>
+          <button id="run-backtest" class="primary wide" type="button">Symbol laden &amp; Backtest</button>
+          <div class="range-group" aria-label="Zeitraum wählen">
+            <button class="range-btn" type="button" data-range="1m">1M</button>
+            <button class="range-btn" type="button" data-range="3m">3M</button>
+            <button class="range-btn" type="button" data-range="6m">6M</button>
+            <button class="range-btn active" type="button" data-range="1y">1J</button>
+            <button class="range-btn" type="button" data-range="3y">3J</button>
+            <button class="range-btn" type="button" data-range="5y">5J</button>
+            <button class="range-btn" type="button" data-range="max">Max</button>
+          </div>
+        </section>
+
+        <section class="panel summary-panel">
+          <div class="section-head small-head">
+            <div>
+              <p class="eyebrow">Analyse-Snapshot</p>
+              <h2>Ergebnisübersicht</h2>
+            </div>
+          </div>
+          <div class="summary-grid">
+            <div><span class="summary-label">Strategie</span><strong id="summary-strategy">Moving Average Crossover</strong></div>
+            <div><span class="summary-label">Zeitraum</span><strong id="summary-range">1J</strong></div>
+            <div><span class="summary-label">Daten</span><strong id="summary-source">Live-Daten</strong></div>
+            <div><span class="summary-label">Letztes Signal</span><strong id="summary-signal">—</strong></div>
+          </div>
+          <ul id="summary-points" class="summary-points">
+            <li>Backtest starten, um Metriken und Handelslog zu füllen.</li>
+          </ul>
+        </section>
+
+        <section id="strategy-panel" class="panel strategy-panel">
+          <div class="section-head small-head">
+            <div>
+              <p class="eyebrow">Strategie</p>
+              <h2>Preset oder Custom DSL</h2>
+            </div>
+            <span id="strategy-kind" class="badge">Preset</span>
+          </div>
+
+          <div class="control-group">
+            <label for="strategy-select">Preset auswählen</label>
+            <select id="strategy-select" class="field field-select">
+              <option value="buy_hold">Buy &amp; Hold Benchmark</option>
+              <option value="ma_crossover" selected>Moving Average Crossover</option>
+              <option value="rsi">RSI</option>
+              <option value="bollinger">Bollinger Mean Reversion</option>
+              <option value="breakout">Breakout</option>
+              <option value="macd">MACD</option>
+              <option value="custom">Custom DSL</option>
+            </select>
+          </div>
+
+          <div id="strategy-description" class="strategy-description"></div>
+          <div id="strategy-params" class="param-grid"></div>
+
+          <div class="inline-controls">
+            <label>
+              Initialkapital
+              <input id="capital-input" type="number" class="field" value="10000" min="100" step="100" />
+            </label>
+            <label>
+              Gebühr %
+              <input id="fee-input" type="number" class="field" value="0.05" min="0" step="0.01" />
+            </label>
+            <label>
+              Slippage %
+              <input id="slippage-input" type="number" class="field" value="0.02" min="0" step="0.01" />
+            </label>
+          </div>
+
+          <div class="control-group custom-block">
+            <label for="custom-strategy">Regeln</label>
+            <textarea id="custom-strategy" class="field textarea" spellcheck="false" aria-label="Custom Strategie Regeln"></textarea>
+            <div class="template-row" aria-label="DSL Vorlagen">
+              <button type="button" class="template-btn" data-template="crossover">Cross</button>
+              <button type="button" class="template-btn" data-template="rsi">RSI</button>
+              <button type="button" class="template-btn" data-template="breakout">Breakout</button>
+            </div>
+          </div>
+
+          <div class="hero-tools">
+            <button id="run-strategy" class="secondary wide" type="button">Backtest neu berechnen</button>
+            <button id="reset-strategy" class="secondary wide" type="button">Beispiel laden</button>
+          </div>
+          <p id="strategy-feedback" class="feedback muted">Wähle eine Strategie und starte den Backtest.</p>
+        </section>
+
+        <section class="panel watchlist-panel">
+          <div class="section-head small-head">
+            <div>
+              <p class="eyebrow">Watchlist</p>
+              <h2>Schnell laden</h2>
+            </div>
+          </div>
+          <div class="watchlist-grid">
+            <button class="watch-btn" type="button" data-symbol="AAPL">AAPL · Apple</button>
+            <button class="watch-btn" type="button" data-symbol="MSFT">MSFT · Microsoft</button>
+            <button class="watch-btn" type="button" data-symbol="NVDA">NVDA · NVIDIA</button>
+            <button class="watch-btn" type="button" data-symbol="SPY">SPY · S&amp;P 500 ETF</button>
+            <button class="watch-btn" type="button" data-symbol="SAP.DE">SAP.DE · SAP</button>
+            <button class="watch-btn" type="button" data-symbol="TSLA">TSLA · Tesla</button>
+          </div>
+          <p class="muted small-text">Tipp: Der Backtest arbeitet mit Tagesdaten. Für andere Märkte kannst du einfach ein Symbol eingeben und laden.</p>
+        </section>
+      </aside>
     </main>
   </div>
 </body>

@@ -3,8 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Backtest – Hilfe</title>
-  <meta name="description" content="Hilfe zur Backtest-Web-App: Symbole, Zeiträume und Kennzahlen." />
+  <title>Backtest Pro – Hilfe</title>
+  <meta name="description" content="Hilfe zur Backtest-Pro-App: Bedienung, Kennzahlen, sichere DSL und typische Workflows." />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
   <link rel="stylesheet" href="style.css" />
   <script src="app.js" defer></script>
 </head>
@@ -13,52 +14,76 @@
     <header class="topbar">
       <div>
         <p class="eyebrow">Hilfe</p>
-        <h1>Backtest</h1>
+        <h1>Backtest Pro</h1>
+        <p class="hero-text">Kurzanleitung für Symbolwahl, Strategie-Presets, Kennzahlen und die sichere Custom-DSL.</p>
       </div>
       <nav class="topnav" aria-label="Hauptnavigation">
-        <a href="index.html">Zurück</a>
-        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Dark Mode aktivieren">Dark Mode</button>
+        <a href="index.html">Dashboard</a>
+        <a href="strategies.html">Strategien</a>
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Dark Mode aktivieren" aria-pressed="false">Dark Mode</button>
       </nav>
     </header>
 
     <main class="help-layout">
       <section class="panel prose">
-        <h2>So benutzt du die App</h2>
+        <h2>So funktioniert die App</h2>
         <ol>
-          <li>Gib ein Börsensymbol ein, zum Beispiel AAPL, MSFT oder SAP.</li>
-          <li>Klicke auf <strong>Backtest starten</strong>, um die Kursdaten zu laden.</li>
-          <li>Wähle einen Zeitraum über die Schaltflächen 1 Woche, 1 Monat, 1 Jahr oder 5 Jahre.</li>
-          <li>Sieh dir den Verlauf im Chart an und lies die Kennzahlen darunter ab.</li>
+          <li>Wähle ein Symbol oder lade ein Beispiel aus der Watchlist.</li>
+          <li>Entscheide dich für ein Preset oder eine Custom-DSL-Strategie.</li>
+          <li>Passe Kapital, Gebühren und Slippage an.</li>
+          <li>Starte den Backtest und prüfe Equity Curve, Drawdown und Trade-Tabelle.</li>
         </ol>
 
-        <h3>Was bedeuten die Kennzahlen?</h3>
+        <h2>Wichtige Kennzahlen</h2>
         <dl class="definition-list">
           <div>
-            <dt>Rendite</dt>
-            <dd>Die prozentuale Veränderung vom ersten zum letzten Kurs im gewählten Zeitraum.</dd>
+            <dt>Endwert</dt>
+            <dd>Wert des Portfolios nach dem letzten Trade oder bis zum Ende des Zeitraums.</dd>
+          </div>
+          <div>
+            <dt>Performance</dt>
+            <dd>Rendite der gewählten Strategie gegenüber dem Startkapital.</dd>
+          </div>
+          <div>
+            <dt>Buy &amp; Hold</dt>
+            <dd>Benchmark, die die gleiche Periode ohne aktives Trading hält.</dd>
+          </div>
+          <div>
+            <dt>Outperformance</dt>
+            <dd>Differenz zwischen Strategie-Rendite und Buy-&amp;-Hold-Rendite.</dd>
           </div>
           <div>
             <dt>Max Drawdown</dt>
-            <dd>Der stärkste zwischenzeitliche Rückgang vom vorherigen Höchststand. Je kleiner, desto ruhiger der Verlauf.</dd>
+            <dd>Größter prozentualer Rückgang vom bisherigen Höchststand der Equity Curve.</dd>
           </div>
           <div>
-            <dt>Volatilität</dt>
-            <dd>Ein Maß dafür, wie stark der Kurs schwankt. Höhere Werte bedeuten mehr Bewegung und mehr Risiko.</dd>
+            <dt>Sharpe / Volatilität</dt>
+            <dd>Hilfreiche Risiko-Metriken für Trend- und Mean-Reversion-Analysen.</dd>
           </div>
         </dl>
 
-        <h3>Zeiträume erklärt</h3>
+        <h2>Sichere Custom-DSL</h2>
+        <p>Die App führt kein JavaScript aus. Stattdessen werden Regeln als kleine DSL geparst. Zulässig sind nur <code>BUY WHEN</code> und <code>SELL WHEN</code> mit den Vergleichsoperatoren <code>&gt;</code>, <code>&lt;</code>, <code>&gt;=</code>, <code>&lt;=</code>, <code>crosses_above</code> und <code>crosses_below</code>.</p>
+        <p>Erlaubte Felder sind <code>open</code>, <code>high</code>, <code>low</code>, <code>close</code> und <code>volume</code>. Unterstützte Funktionen sind <code>sma()</code>, <code>ema()</code>, <code>highest()</code>, <code>lowest()</code> und <code>rsi()</code>.</p>
+
         <ul>
-          <li><strong>1 Woche</strong>: Kurzfristiger Blick auf die jüngsten Handelstage.</li>
-          <li><strong>1 Monat</strong>: Nützlich für schnelle Trend-Checks.</li>
-          <li><strong>1 Jahr</strong>: Zeigt den mittelfristigen Verlauf.</li>
-          <li><strong>5 Jahre</strong>: Gibt den längsten Überblick über Trend und Schwankungen.</li>
+          <li>Eine Regel pro Zeile.</li>
+          <li>Genau eine BUY- und eine SELL-Regel.</li>
+          <li>Keine freien Ausdrücke, kein eval, keine externen Skripte.</li>
         </ul>
       </section>
 
       <aside class="panel notice">
-        <h2>Wichtiger Hinweis</h2>
-        <p>Backtests sind historisch und keine Garantie für zukünftige Ergebnisse.</p>
+        <h2>Praktische Hinweise</h2>
+        <ul class="tip-list">
+          <li>Wenn ein Symbol keine Live-Daten liefert, wechselt die App automatisch auf Demo-Daten.</li>
+          <li>Für den ersten Test ist <code>Moving Average Crossover</code> ein guter Standard.</li>
+          <li>Die Strategie-Parameter werden direkt im Browser neu berechnet, ohne Server-Backend.</li>
+          <li>Nutze die Watchlist, um schnell zwischen Märkten zu vergleichen.</li>
+        </ul>
+
+        <h2>Interpretation</h2>
+        <p>Ein gutes Preset ist nicht automatisch ein profitables Live-System. Reale Ausführung hängt zusätzlich von Liquidität, Slippage, Steuern, Gebühren und deinem Risikomanagement ab.</p>
       </aside>
     </main>
   </div>
