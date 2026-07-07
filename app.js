@@ -11,6 +11,10 @@ const RETURN_PERCENT = document.getElementById('return-percent');
 const MAX_DRAWDOWN = document.getElementById('max-drawdown');
 const VOLATILITY = document.getElementById('volatility');
 const CHART_EL = document.getElementById('price-chart');
+const THEME_TOGGLE = document.getElementById('theme-toggle');
+const THEME_STORAGE_KEY = 'backtest-theme';
+
+initTheme();
 
 if (CHART_EL && typeof Chart !== 'undefined') {
   const state = {
@@ -61,6 +65,10 @@ if (CHART_EL && typeof Chart !== 'undefined') {
       updateActiveRange();
       render();
     });
+  });
+
+  document.addEventListener('backtest-theme-change', () => {
+    render();
   });
 
   async function init() {
@@ -158,14 +166,15 @@ if (CHART_EL && typeof Chart !== 'undefined') {
   }
 
   function updateChart(labels, prices) {
+    const chartColors = getChartColors();
     const data = {
       labels,
       datasets: [
         {
           label: `${state.symbol} Kurs`,
           data: prices,
-          borderColor: '#2962ff',
-          backgroundColor: 'rgba(41, 98, 255, 0.12)',
+          borderColor: chartColors.accent,
+          backgroundColor: chartColors.fill,
           pointRadius: 0,
           pointHitRadius: 10,
           tension: 0.28,
@@ -190,6 +199,7 @@ if (CHART_EL && typeof Chart !== 'undefined') {
   }
 
   function chartOptions() {
+    const chartColors = getChartColors();
     return {
       responsive: true,
       maintainAspectRatio: false,
@@ -202,12 +212,12 @@ if (CHART_EL && typeof Chart !== 'undefined') {
           display: false,
         },
         tooltip: {
-          backgroundColor: 'rgba(15, 23, 42, 0.96)',
-          borderColor: 'rgba(255, 255, 255, 0.08)',
+          backgroundColor: chartColors.tooltipBg,
+          borderColor: chartColors.tooltipBorder,
           borderWidth: 1,
           padding: 12,
-          titleColor: '#ffffff',
-          bodyColor: '#e2e8f0',
+          titleColor: chartColors.tooltipTitle,
+          bodyColor: chartColors.tooltipBody,
           displayColors: false,
           callbacks: {
             label(context) {
@@ -222,27 +232,27 @@ if (CHART_EL && typeof Chart !== 'undefined') {
             display: false,
           },
           ticks: {
-            color: '#667085',
+            color: chartColors.muted,
             maxRotation: 0,
             autoSkip: true,
             maxTicksLimit: 8,
           },
           border: {
-            color: 'rgba(228, 233, 242, 0.9)',
+            color: chartColors.border,
           },
         },
         y: {
           grid: {
-            color: 'rgba(228, 233, 242, 0.85)',
+            color: chartColors.grid,
           },
           ticks: {
-            color: '#667085',
+            color: chartColors.muted,
             callback(value) {
               return `${Number(value).toFixed(0)} €`;
             },
           },
           border: {
-            color: 'rgba(228, 233, 242, 0.9)',
+            color: chartColors.border,
           },
         },
       },
@@ -393,4 +403,48 @@ if (CHART_EL && typeof Chart !== 'undefined') {
     const day = date.getDay();
     return day === 0 || day === 6;
   }
+}
+
+function initTheme() {
+  const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+  const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches;
+  const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light');
+
+  applyTheme(initialTheme);
+
+  THEME_TOGGLE?.addEventListener('click', () => {
+    const nextTheme = document.body.dataset.theme === 'dark' ? 'light' : 'dark';
+    applyTheme(nextTheme);
+    localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
+    document.dispatchEvent(new Event('backtest-theme-change'));
+  });
+}
+
+function applyTheme(theme) {
+  const normalizedTheme = theme === 'dark' ? 'dark' : 'light';
+  document.body.dataset.theme = normalizedTheme;
+
+  if (THEME_TOGGLE) {
+    const darkActive = normalizedTheme === 'dark';
+    THEME_TOGGLE.textContent = darkActive ? 'Light Mode' : 'Dark Mode';
+    THEME_TOGGLE.setAttribute('aria-label', darkActive ? 'Light Mode aktivieren' : 'Dark Mode aktivieren');
+    THEME_TOGGLE.setAttribute('aria-pressed', darkActive ? 'true' : 'false');
+  }
+}
+
+function getChartColors() {
+  const styles = getComputedStyle(document.body);
+  const isDark = document.body.dataset.theme === 'dark';
+
+  return {
+    accent: styles.getPropertyValue('--accent').trim() || '#2962ff',
+    fill: isDark ? 'rgba(122, 162, 255, 0.14)' : 'rgba(41, 98, 255, 0.12)',
+    muted: styles.getPropertyValue('--muted').trim() || '#667085',
+    border: styles.getPropertyValue('--border').trim() || '#e4e9f2',
+    grid: isDark ? 'rgba(148, 163, 184, 0.16)' : 'rgba(228, 233, 242, 0.85)',
+    tooltipBg: isDark ? 'rgba(2, 6, 23, 0.96)' : 'rgba(15, 23, 42, 0.96)',
+    tooltipBorder: isDark ? 'rgba(148, 163, 184, 0.18)' : 'rgba(255, 255, 255, 0.08)',
+    tooltipTitle: '#ffffff',
+    tooltipBody: isDark ? '#dbeafe' : '#e2e8f0',
+  };
 }
