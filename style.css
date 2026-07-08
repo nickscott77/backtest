@@ -345,7 +345,7 @@ textarea:focus {
 
 .dashboard-grid {
   display: grid;
-  grid-template-columns: 170px minmax(0, 1fr) 360px;
+  grid-template-columns: 160px minmax(0, 1fr);
   gap: 18px;
   align-items: start;
 }
@@ -353,6 +353,14 @@ textarea:focus {
 .sidebar {
   display: grid;
   gap: 18px;
+}
+.sidebar {
+  grid-column: 2;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+}
+.strategy-panel {
+  grid-row: span 2;
 }
 .section-head {
   display: flex;
@@ -599,7 +607,6 @@ textarea:focus {
   .dashboard-grid {
     grid-template-columns: 140px minmax(0, 1fr);
   }
-  .sidebar { grid-column: 2; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .module-nav { position: static; }
 }
 
@@ -615,7 +622,7 @@ textarea:focus {
   .summary-grid {
     grid-template-columns: 1fr;
   }
-  .sidebar { grid-template-columns: 1fr; }
+  .sidebar { grid-column: auto; grid-template-columns: 1fr; }
   .watchlist-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 }
 
